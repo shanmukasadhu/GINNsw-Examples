@@ -14,6 +14,24 @@ from models.wire import ConditionalWIRE
 from functools import cmp_to_key
 
 
+def get_default_device():
+    """
+    Compatibility wrapper for torch.get_default_device()
+    which may not exist in all PyTorch versions.
+    """
+    if hasattr(torch, 'get_default_device'):
+        return torch.get_default_device()
+    else:
+        print("Using Fallback")
+        # Fallback for older PyTorch versions
+        if torch.cuda.is_available():
+            print("Using Cuda")
+            return torch.device('cuda:0')
+        else:
+            print("Using CPU")
+            return torch.device('cpu')
+
+
 def set_all_seeds(seed):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)

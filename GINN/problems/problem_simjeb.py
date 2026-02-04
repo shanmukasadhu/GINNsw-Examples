@@ -8,7 +8,7 @@ import trimesh
 from GINN.problems.constraints import BoundingBox2DConstraint, DiskConstraint, CompositeInterface, RectangleEnvelope, LineInterface2D, CompositeConstraint, SampleConstraint, SampleConstraintWithNormals, SampleEnvelope
 from GINN.problems.problem_base import ProblemBase
 from util.sample_utils import inflate_bounds
-from util.misc import get_is_out_mask
+from util.misc import get_is_out_mask, get_default_device
 from util.visualization.utils_mesh import get_meshgrid_in_domain
 
 
@@ -34,9 +34,9 @@ class ProblemSimjeb(ProblemBase):
         
         self._envelope_constr = None
         self._interface_constraints = []
-        self._normal_constraints = []        
+        self._normal_constraints = []
         self._obstacle_constraints = []
-        device = torch.get_default_device()        
+        device = get_default_device()        
        
         # see paper page 5 - https://arxiv.org/pdf/2105.03534.pdf
         # measurements given in 100s of millimeters

@@ -10,7 +10,7 @@ from GINN.problems.problem_base import ProblemBase
 from util.model_utils import tensor_product_xz
 from models.point_wrapper import PointWrapper
 from util.visualization.utils_mesh import get_watertight_mesh_for_latent
-from util.misc import get_is_out_mask
+from util.misc import get_is_out_mask, get_default_device
 from util.visualization.utils_mesh import get_meshgrid_for_marching_squares, get_meshgrid_in_domain
 
 def t_(x):
@@ -102,7 +102,7 @@ class ProblemCantilever2d(ProblemBase):
         
         ## For plotting
         self.X0, self.X1, self.xs = get_meshgrid_in_domain(self.bounds.cpu(), plot_2d_resolution, plot_2d_resolution) # inflate bounds for better visualization
-        self.xs = torch.tensor(self.xs, dtype=torch.float32, device=torch.get_default_device())
+        self.xs = torch.tensor(self.xs, dtype=torch.float32, device=get_default_device())
         
     def is_inside_envelope(self, a: torch.Tensor):
         """Get mask for points which are inside the envelope"""

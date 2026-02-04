@@ -1,5 +1,6 @@
 import torch
 from train.train_utils.loss_calculator_base import LossCalculator
+from util.misc import get_default_device
 
 
 class ManualWeightedLoss(LossCalculator):
@@ -8,8 +9,8 @@ class ManualWeightedLoss(LossCalculator):
         self.loss_keys = scalar_loss_keys + field_loss_keys
         self.scalar_loss_keys = scalar_loss_keys
         self.field_loss_keys = field_loss_keys
-        
-        self.lamda = { key.lambda_key: torch.tensor(lambda_dict[key], device=torch.get_default_device()) for key in self.loss_keys }
+
+        self.lamda = { key.lambda_key: torch.tensor(lambda_dict[key], device=get_default_device()) for key in self.loss_keys }
         
         self.loss_weighted_dict = {}
         self.loss_unweighted_dict = {}

@@ -11,6 +11,7 @@ from types import FunctionType
 
 from models.point_wrapper import PointWrapper
 from train.train_utils.loss_calculator_base import LossCalculator
+from util.misc import get_default_device
 
 
 class AdaptiveAugmentedLagrangianLoss(LossCalculator):
@@ -28,12 +29,12 @@ class AdaptiveAugmentedLagrangianLoss(LossCalculator):
         subloss_keys = [key for key in self.loss_keys if key != obj_key]
         
         # print(f'WARNING: In contrast to previous implementation, the lambda_dict is not set to all 1s, but to the config lambda values')
-        self.lamda = { key.lambda_key: torch.tensor(lambda_dict[key], device=torch.get_default_device()) for key in self.loss_keys }
-        # self.lamda = { key.lambda_key: torch.tensor(1.0, device=torch.get_default_device()) for key in subloss_keys }
+        self.lamda = { key.lambda_key: torch.tensor(lambda_dict[key], device=get_default_device()) for key in self.loss_keys }
+        # self.lamda = { key.lambda_key: torch.tensor(1.0, device=get_default_device()) for key in subloss_keys }
         # # add objective lambda explicitly and don't set to 1, as it is like a constant scale factor of the loss
-        # self.lamda[obj_key.lambda_key] = torch.tensor(lambda_dict[obj_key], device=torch.get_default_device())
-        self.mu = { key.mu_key: torch.tensor(1.0, device=torch.get_default_device()) for key in subloss_keys }
-        self.nu = { key.nu_key: torch.tensor(0.0, device=torch.get_default_device()) for key in subloss_keys }
+        # self.lamda[obj_key.lambda_key] = torch.tensor(lambda_dict[obj_key], device=get_default_device())
+        self.mu = { key.mu_key: torch.tensor(1.0, device=get_default_device()) for key in subloss_keys }
+        self.nu = { key.nu_key: torch.tensor(0.0, device=get_default_device()) for key in subloss_keys }
 
         self.loss_unweighted_dict = {}
         self.lagrangian_loss_dict = {}

@@ -59,10 +59,16 @@ def main():
         else:
             device = 'cpu'
         print(f'Visible CUDA devices: {os.getenv("CUDA_VISIBLE_DEVICES")} - using device {device}')
-        torch.set_default_device(device)
+        if hasattr(torch, 'set_default_device'):
+            torch.set_default_device(device)
+        else:
+            print(f'Warning: torch.set_default_device not available in this PyTorch version')
+            torch.cuda.set_device(0)
     else:
         print('CUDA not available - proceeding on CPU')
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        device = 'cpu'
+    if torch.cuda.is_available():
+        torch.set_default_tensor_type('torch.cuda.FloatTensor')
     
     # NOTE: to disable wandb set the ENV
     # "WANDB_MODE": "disabled"

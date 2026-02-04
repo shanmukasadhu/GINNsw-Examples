@@ -1,13 +1,14 @@
 
 import torch
+from util.misc import get_default_device
 
 class SimJebDataloader:
     '''
     The dataloader for the SimJeb dataset loads the data in memory.
     '''
-    
+
     def __init__(self, dataset, n_points) -> None:
-        self.device = torch.get_default_device()
+        self.device = get_default_device()
         self.data = dataset
         self.shuffle_idcs = torch.randperm(len(self.data), device=self.device)
         self.cur_data_idx = 0

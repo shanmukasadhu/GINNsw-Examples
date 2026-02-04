@@ -26,7 +26,7 @@ from GINN.ph.ph_manager import PHManager
 from GINN.speed.timer import Timer
 from train.train_utils.latent_sampler import LatentSampler
 from util.checkpointing import load_model_optim_sched, save_model_every_n_epochs
-from util.misc import combine_dicts, do_plot, get_model, get_problem, is_every_n_epochs_fulfilled
+from util.misc import combine_dicts, do_plot, get_model, get_problem, is_every_n_epochs_fulfilled, get_default_device
 from train.losses_ginn import *
 from train.train_utils.loss_calculator_alm import AdaptiveAugmentedLagrangianLoss
 
@@ -78,7 +78,7 @@ class Trainer():
             else:
                 feni_kwargs['envelope_unnormalized'] = self.problem.envelope_unnormalized.cpu().numpy()
                 feni_kwargs['bounds_unnormalized'] = self.problem.bounds_unnormalized
-            self.feni = FenitopMP(device=torch.get_default_device(), bz=self.config['ginn_bsize'], mp_pool=mp_top, np_func_inside_envelope=self.problem.is_inside_envelope, **feni_kwargs)
+            self.feni = FenitopMP(device=get_default_device(), bz=self.config['ginn_bsize'], mp_pool=mp_top, np_func_inside_envelope=self.problem.is_inside_envelope, **feni_kwargs)
             self.beta = self.config['beta_sched']['init']
             
         # data
@@ -385,7 +385,7 @@ class Trainer():
             'eikonal': partial(loss_eikonal, p_sampler=self.problem, netp=self.netp, scale_eikonal=self.config.get('scale_eikonal', 1), nf_is_density=self.config['nf_is_density']),
             'scc': partial(loss_scc, ph_manager=self.ph_manager),
             'curv': partial(loss_curv, netp=self.netp, logger=self.logger, \
-                            max_curv=self.config['max_curv'], device=torch.get_default_device(), \
+                            max_curv=self.config['max_curv'], device=get_default_device(), \
                             loss_scale=self.config.get('scale_curv', 1.0),
                             curvature_expression=self.config['curvature_expression'], \
                             strain_curvature_clip_max=self.config['strain_curvature_clip_max'], \
