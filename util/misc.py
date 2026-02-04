@@ -107,6 +107,9 @@ def get_problem(problem_config, **kwargs):
     elif problem_config['problem_str'] == 'simjeb':
         from GINN.problems.problem_simjeb import ProblemSimjeb
         return ProblemSimjeb(**problem_config, **kwargs)
+    elif problem_config['problem_str'] == 'owlet_stencil':
+        from GINN.problems.problem_owlet_stencil import ProblemOwletStencil
+        return ProblemOwletStencil(**problem_config, **kwargs)
     else:
         raise ValueError(f'Unknown problem type: {problem_config["problem_str"]}')
 

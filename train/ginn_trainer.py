@@ -29,6 +29,8 @@ from util.checkpointing import load_model_optim_sched, save_model_every_n_epochs
 from util.misc import combine_dicts, do_plot, get_model, get_problem, is_every_n_epochs_fulfilled, get_default_device
 from train.losses_ginn import *
 from train.train_utils.loss_calculator_alm import AdaptiveAugmentedLagrangianLoss
+from train.losses_acoustic import AcousticLosses, create_target_response_frontal_bias
+from train.losses_acoustic_wrappers import loss_freq_response, loss_angular_div, loss_directional, loss_hole_size
 
 
 class Trainer():
@@ -98,7 +100,33 @@ class Trainer():
         self.weights_surf_pts = None
         self.cur_plot_epoch = 0
         self.log_history_dict = {}
-        
+
+        # acoustic losses (for Owlet stencil)
+        self.acoustic_losses = None
+        if config['problem']['problem_str'] == 'owlet_stencil':
+            acoustic_config = config.get('acoustic', {})
+            frequencies = acoustic_config.get('target_frequencies', [500, 1000, 2000, 4000, 8000])
+            angles = acoustic_config.get('target_angles', [0, 30, 60, 90, 120, 150, 180])
+            target_type = acoustic_config.get('target_response_type', 'frontal_bias')
+
+            if target_type == 'frontal_bias':
+                target_response = create_target_response_frontal_bias(
+                    n_angles=len(angles),
+                    n_frequencies=len(frequencies),
+                    device='cuda' if torch.cuda.is_available() else 'cpu'
+                )
+            else:
+                target_response = None
+
+            self.acoustic_losses = AcousticLosses(
+                frequencies=frequencies,
+                angles=angles,
+                target_response=target_response,
+                stencil_radius=self.problem.stencil_radius,
+                stencil_height=self.problem.stencil_height
+            )
+            self.logger.info(f'Acoustic losses initialized for Owlet stencil design')
+
         # loss balancing
         self.scalar_loss_keys, self.field_loss_keys, lambda_dict, objective_key = get_loss_keys_and_lambdas(self.config)
         self.all_loss_keys = self.scalar_loss_keys + self.field_loss_keys
@@ -413,6 +441,14 @@ class Trainer():
             'null': partial(loss_null, netp=self.netp),
             
             'rotsym': partial(loss_rotation_symmetric, netp=self.netp, p_sampler=self.problem, n_cycles=self.config['problem']['rotation_n_cycles']),
-            
         }
+
+        # Add acoustic losses if Owlet stencil problem
+        if self.acoustic_losses is not None:
+            loss_dispatcher['freq_response'] = partial(loss_freq_response, acoustic_losses=self.acoustic_losses, netp=self.netp)
+            loss_dispatcher['angular_div'] = partial(loss_angular_div, acoustic_losses=self.acoustic_losses, netp=self.netp)
+            loss_dispatcher['directional'] = partial(loss_directional, acoustic_losses=self.acoustic_losses, netp=self.netp)
+            loss_dispatcher['hole_size'] = partial(loss_hole_size, acoustic_losses=self.acoustic_losses, netp=self.netp)
+            self.logger.info('Added acoustic losses to dispatcher')
+
         return loss_dispatcher

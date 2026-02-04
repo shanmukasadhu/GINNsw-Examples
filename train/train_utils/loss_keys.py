@@ -1,4 +1,10 @@
 class LossKey:
+    # Acoustic loss keys (static attributes)
+    FREQ_RESPONSE = 'freq_response'
+    ANGULAR_DIV = 'angular_div'
+    DIRECTIONAL = 'directional'
+    HOLE_SIZE = 'hole_size'
+
     def __init__(self, key: str):
         self.base_key = key
         self.mu_key = f"mu_{key}"
@@ -10,13 +16,13 @@ class LossKey:
 
     def __repr__(self):
         return f"LossKey(base_key={self.base_key})"
-    
+
     def __eq__(self, other):
         """Overrides the default == implementation"""
         if isinstance(other, LossKey):
             return self.base_key == other.base_key
         return False
-    
+
     # for hashing
     def __hash__(self):
         return hash(self.base_key)
